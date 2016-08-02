@@ -35,10 +35,13 @@ int main() {
 
 	int iLowV = 60;
 	int iHighV = 255;
+	int TH = 100;
+
 
 	VideoCapture cap;
 	Mat ch1,ch2,ch3;
 	Mat theFilteredImage;
+	Mat edges;
 	Mat dst(bg.rows, bg.cols, CV_8UC1, Scalar::all(0));
 	vector<cv::Point> max_contour, max_convex;
 	//BackgroundSubtractorMOG2 MOG;
@@ -92,7 +95,7 @@ detectShadows – If true, the algorithm will detect shadows and mark them. It dec
 		//update background mode
 		if(!cap_image.empty()){
 			//pMOG2->apply(cap_image, fgMaskMOG2);
-
+			threshold(cap_image, edges, TH, 255, THRESH_BINARY);
 			// add white border around the image
 			//copyMakeBorder(cap_image, cap_image, 10, 10, 10, 10, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 255)); 
 
@@ -169,16 +172,16 @@ detectShadows – If true, the algorithm will detect shadows and mark them. It dec
 
 			max_contour = contours[largest_contour_index];
 			max_convex = hull[largest_contour_index];
-			std::vector<cv::Point> tips;
-			cv::Point centre_point = mc[largest_contour_index];
+			std::vector<cv::Point> fingers;
+			cv::Point centreMass = mc[largest_contour_index];
 			int k = 0;
 
-			//find finger tips
+			//Detect individual fingerss
 			for (int i = 0; i<max_contour.size(); i++) {
 				for (int j = 0; j<max_convex.size(); j++) {
 					if (cv::norm(cv::Mat(max_contour[i]), cv::Mat(max_convex[j])) == 0) {
 
-						tips.push_back(max_contour[i]);
+						fingers.push_back(max_contour[i]);
 						k++;
 
 					}
@@ -191,13 +194,13 @@ detectShadows – If true, the algorithm will detect shadows and mark them. It dec
 			m_number_of_fingers = 0;
 
 			//refine fingertip selection
-			for (int i = 1; i<tips.size(); i++) {
+			for (int i = 1; i<fingers.size(); i++) {
 
-				distance = cv::norm(cv::Mat(tips[i - 1]), cv::Mat(tips[i]));
-				centre_distance = cv::norm(cv::Mat(tips[i]), cv::Mat(centre_point));
-				if (distance>20 && tips[i].y <  mc[largest_contour_index].y &&centre_distance >100) {
+				distance = cv::norm(cv::Mat(fingers[i - 1]), cv::Mat(fingers[i]));
+				centre_distance = cv::norm(cv::Mat(fingers[i]), cv::Mat(centreMass));
+				if (distance>20 && fingers[i].y <  mc[largest_contour_index].y &&centre_distance >100) {
 					m_number_of_fingers++;
-					cv::circle(cap_image, tips[i], 4, cv::Scalar(255, 0, 255), -1, 8, 0);
+					cv::circle(cap_image, fingers[i], 4, cv::Scalar(255, 0, 255), -1, 8, 0);
 				}
 
 			}
@@ -213,6 +216,11 @@ detectShadows – If true, the algorithm will detect shadows and mark them. It dec
 
 			else if (m_number_of_fingers == 5) {
 				string labelGesture = "Gesture: Extended";
+				putText(cap_image, labelGesture, cv::Point(10, 10), FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0));
+			}
+
+			else if (detectRoundFigure(cap_image, 400, 0.6)) {
+				string labelGesture = "Gesture: Oki Doki";
 				putText(cap_image, labelGesture, cv::Point(10, 10), FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0));
 			}
 			else {
@@ -247,7 +255,7 @@ detectShadows – If true, the algorithm will detect shadows and mark them. It dec
 
 		//Since we can assume we are working with a perfectly solid background
 
-		char * temp = "largest Contour Joint";
+		char * temp = "largest Contour";
 		imshow(temp, dst);
 		imshow("Camera Capture", cap_image);
 		waitKey(33);          //delay 33ms
@@ -273,17 +281,3 @@ detectShadows – If true, the algorithm will detect shadows and mark them. It dec
 
 
 
-
-void displayInfo()
-{
-cout
-		<< "--------------------------------------------------------------------------" << endl
-		<< "This program Segments the hand of a user and indicates how many fingers " << endl
-		<< "or if  the user is performed a predefined gesture." << endl
-		<< endl
-		<< "Usage:" << endl
-		<< "Keep a bright plain background as the recording environment." << endl
-		<< "After lauching the application put your hand in the scene and toy around. " << endl
-		<< "--------------------------------------------------------------------------" << endl
-		<< endl;
-}

@@ -38,3 +38,5 @@ cv::vector< cv::Vec4i> defects;
 
 
 void displayInfo();
+bool detectRoundFigure(Mat Image, double mincontour, double roundLimit);
+double FindRoundness(double a, double p);
