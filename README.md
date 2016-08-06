@@ -2,7 +2,7 @@
 
 <snippet>
   <content>
-# ${1:MusicGroupTest}
+# 1:MusicGroupTest
 
 This is a hand detection application. Inilitalize the program and put your hand in front of your device main camera.
 The program is able to identify a catalogue of gesture, labeling it in real time.
