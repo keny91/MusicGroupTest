@@ -1,7 +1,7 @@
 # MusicGroupTest
 
 <snippet>
-  <content><![CDATA[
+  <content>
 # ${1:MusicGroupTest}
 
 This is a hand detection application. Inilitalize the program and put your hand in front of your device main camera.
@@ -35,6 +35,6 @@ Luis Herranz Mañas
 ## License
 OpenCV license: free distributed agreement.
 
-]]></content>
+</content>
   <tabTrigger>readme</tabTrigger>
 </snippet>
